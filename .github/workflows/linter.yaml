@@ -1,0 +1,24 @@
+---
+name: Linter
+on:
+  pull_request:
+    branches: [main]
+jobs:
+  lint:
+    runs-on: self-hosted
+    container:
+      image: catthehacker/ubuntu:act-latest
+    steps:
+      - name: Check out repository code
+        uses: actions/checkout@v3
+
+      - name: Lint code base
+        uses: super-linter/super-linter@v5
+        env:
+          VALIDATE_ALL_CODEBASE: true
+          DEFAULT_BRANCH: master
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          VALIDATE_ENV: true
+          VALIDATE_GITHUB_ACTIONS: true
+          VALIDATE_YAML: true
+          VALIDATE_MARKDOWN: true
