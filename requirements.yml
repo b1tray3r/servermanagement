@@ -1,3 +1,6 @@
 ---
 - src: geerlingguy.docker
 - src: geerlingguy.docker_arm
+
+- name: b1tray3r.nginx-proxymanager
+  src: https://github.com/b1tray3r/ansible-nginx-proxymanager
