@@ -1,0 +1,28 @@
+---
+name: deploy nginx-proxymanager
+on:
+  push:
+    branches: 
+      - main
+jobs:
+  run-playbook:
+    runs-on: self-hosted
+    container:
+      image: ubuntu:latest
+    steps:
+      - name: checkout
+        uses: actions/checkout@v3
+      
+      - name: Run playbook
+        uses: dawidd6/action-ansible-playbook@v2
+        with:
+          playbook: setup.yml
+          directory: ./playbooks/ngnix-proxymanager/
+          key: ${{secrets.SSH_PRIVATE_KEY}}
+          known_hosts: |
+            borgardt.me ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIO6PbqeIK1MxerREjtbltU98Ju8CP11RAbFNbA/hqJc0
+          vault_password: ${{secrets.VAULT_PASSWORD}}
+          requirements: requirements.yml
+          options: |
+            --inventory inventories
+            --limit borgardt.me
