@@ -31,4 +31,3 @@ jobs:
           options: |
             --inventory inventories
             --limit borgardt.me
-            -vvv
