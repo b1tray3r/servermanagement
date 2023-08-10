@@ -8,16 +8,21 @@ jobs:
   run-playbook:
     runs-on: self-hosted
     container:
-      image: ubuntu:latest
+      image: node:16-bullseye
     steps:
       - name: checkout
         uses: actions/checkout@v3
+
+      - name: install ansible-galaxy
+        run: |
+          apt-get update
+          apt-get install ansible -y
       
       - name: Run playbook
         uses: dawidd6/action-ansible-playbook@v2
         with:
-          playbook: setup.yml
-          directory: ./playbooks/ngnix-proxymanager/
+          playbook: playbooks/ngnix-proxymanager/setup.yml
+          directory: .
           key: ${{secrets.SSH_PRIVATE_KEY}}
           known_hosts: |
             borgardt.me ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIO6PbqeIK1MxerREjtbltU98Ju8CP11RAbFNbA/hqJc0
@@ -26,3 +31,4 @@ jobs:
           options: |
             --inventory inventories
             --limit borgardt.me
+            -vvv
