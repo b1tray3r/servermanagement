@@ -2,8 +2,8 @@
 name: deploy nginx-proxymanager
 on:
   push:
-    branches: 
-      - main
+#    branches: 
+#      - main
 jobs:
   run-playbook:
     runs-on: self-hosted
