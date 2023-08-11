@@ -2,5 +2,10 @@
 
 - hosts: all
 
+  vars:
+    pip_install_packages:
+      - name: docker
+
   roles:
-    -  b1tray3r.nginx-proxymanager
+    - geerlingguy.pip
+    - b1tray3r.nginx-proxymanager
