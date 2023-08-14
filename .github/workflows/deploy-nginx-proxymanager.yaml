@@ -30,4 +30,5 @@ jobs:
           requirements: requirements.yml
           options: |
             --inventory inventories
+            --extra-vars ansible_become_pass=$secrets.ANSIBLE_BECOME_PASS
             --limit borgardt.me
