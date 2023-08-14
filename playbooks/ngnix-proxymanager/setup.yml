@@ -8,5 +8,6 @@
 
   roles:
     - geerlingguy.pip
+    - geerlingguy.docker
     - b1tray3r.nginx-proxymanager
     
