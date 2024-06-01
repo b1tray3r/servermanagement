@@ -1,0 +1,25 @@
+networks:
+    proxy:
+        external: true
+        name: {{ TRAEFIK_PROXY_NETWORK }}
+services:
+    dockge:
+        environment:
+        - DOCKGE_STACKS_DIR=/var/opt/stacks
+        image: louislam/dockge:{{ DOCKGE_IMAGE_VERSION }}
+        labels:
+        - traefik.docker.network=proxy
+        - traefik.enable=true
+        - traefik.http.routers.dockge.entrypoints=websecure
+        - traefik.http.routers.dockge.rule=Host(`{{ DOCKGE_PROXY_HOST }}`)
+        - traefik.http.routers.dockge.tls=true
+        - traefik.http.routers.dockge.tls.certresolver=letsencrypt
+        - traefik.http.routers.dockge.tls.options=default
+        - traefik.http.routers.dockge.middlewares=authelia
+        networks:
+        - proxy
+        restart: unless-stopped
+        volumes:
+        - /var/run/docker.sock:/var/run/docker.sock:ro
+        - {{ BASE_DIR }}:/var/opt/stacks
+        - ./data:/app/data

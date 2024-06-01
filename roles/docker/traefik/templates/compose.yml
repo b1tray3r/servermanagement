@@ -1,0 +1,71 @@
+networks:
+  proxy:
+    external: false
+    name: proxy
+
+services:
+  traefik:
+    image: traefik:v3.0
+    container_name: traefik
+    command: 
+      - --log.level=WARN
+      - --api.insecure=false
+      - --api.dashboard=true
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      - --entrypoints.web=true
+      - --entrypoints.web.address=:80
+      - --entrypoints.web.http.redirections.entrypoint.to=websecure
+      - --entrypoints.web.http.redirections.entrypoint.scheme=https
+      - --entrypoints.websecure=true
+      - --entrypoints.websecure.address=:443
+      - --certificatesresolvers.letsencrypt.acme.email={{ TRAEFIK_LETSENCRYPT_EMAIL }}
+      - --certificatesresolvers.letsencrypt.acme.storage=/acme.json
+      - --certificatesresolvers.letsencrypt.acme.dnschallenge.provider=ionos
+      - --certificatesresolvers.letsencrypt.acme.dnschallenge.delayBeforeCheck=0
+    depends_on:
+      - authelia
+    ports:
+      - 80:80
+      - 443:443
+    env_file:
+      - path: ./data/.env
+        required: true
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - /etc/localtime:/etc/localtime:ro
+      - ./data/acme.json:/acme.json
+      - ./data/dynamic.yml:/dynamic.yml
+    networks:
+      - proxy
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=proxy
+      - traefik.http.routers.traefik.entrypoints=websecure
+      - traefik.http.routers.traefik.tls=true
+      - traefik.http.routers.traefik.tls.certresolver=letsencrypt
+      - traefik.http.routers.traefik.rule=Host(`{{ TRAEFIK_PROXY_HOST }}`)
+      - traefik.http.routers.traefik.service=api@internal
+      - traefik.http.routers.traefik.tls.options=default
+      - traefik.http.routers.traefik.middlewares=authelia@docker
+
+  authelia:
+    image: authelia/authelia:4.38.8
+    container_name: authelia
+    restart: unless-stopped
+    volumes:
+      - ./data/:/config
+    networks:
+      - proxy
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=proxy
+      - traefik.http.routers.authelia.entrypoints=websecure
+      - traefik.http.routers.authelia.tls=true
+      - traefik.http.routers.authelia.rule=Host(`{{ AUTHELIA_PROXY_HOST }}`)
+      - traefik.http.routers.authelia.tls.certresolver=letsencrypt
+      - traefik.http.routers.authelia.tls.options=default
+      - traefik.http.middlewares.authelia.forwardauth.address=http://authelia:9091/api/verify?rd=https://sso-test.a.borgardt.me
+      - traefik.http.middlewares.authelia.forwardauth.trustForwardHeader=true
+      - traefik.http.middlewares.authelia.forwardauth.authResponseHeaders=Remote-User,Remote-Groups,Remote-Name,Remote-Email
+

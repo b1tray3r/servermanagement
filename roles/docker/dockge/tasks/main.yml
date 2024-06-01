@@ -1,0 +1,15 @@
+---
+- name: create the dockge directory
+  file:
+    path: "{{ BASE_DIR }}dockge"
+    state: directory
+
+- name: copy the compose template to the host
+  template:
+    src: compose.yml
+    dest: "{{ BASE_DIR }}/dockge/compose.yml"
+
+- name: start stack and wait
+  community.docker.docker_compose_v2:
+    project_src: "{{ BASE_DIR }}dockge"
+    wait: true
