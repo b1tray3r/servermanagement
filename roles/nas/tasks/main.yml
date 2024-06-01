@@ -1,0 +1,59 @@
+---
+- name: install basic packages
+  ansible.builtin.apt:
+    pkg:
+      - progress
+      - btop
+      - neovim
+      - git
+      - curl
+      - wget
+      - htop
+      - xfsprogs
+      - nfs-kernel-server
+      - samba
+
+- name: cleanup apt and OS
+  ansible.builtin.apt:
+    autoremove: yes
+    autoclean: yes
+
+- name: create mount points
+  ansible.builtin.file:
+    path: "{{ item.destination }}"
+    state: directory
+    mode: 0755
+  with_items: "{{ SERVER_DRIVES | default([]) }}"
+
+- name: mount drives
+  ansible.posix.mount:
+    path: "{{ item.destination }}"
+    fstype: "{{ item.fstype }}"
+    state: "{{ item.state }}"
+    src: "{{ item.device }}"
+  with_items: "{{ SERVER_DRIVES | default([]) }}"
+
+- name: create nfs exports
+  ansible.builtin.lineinfile:
+    path: /etc/exports
+    line: "{{ item.destination }} *(rw,sync,no_subtree_check,no_root_squash)"
+    state: present
+  with_items: "{{ SERVER_DRIVES | default([]) }}"
+
+- name: restart nfs server
+  ansible.builtin.service:
+    name: nfs-kernel-server
+    state: restarted
+
+- name: copy the smb.conf file
+  ansible.builtin.copy:
+    src: files/smb.conf
+    dest: /etc/samba/smb.conf
+    owner: root
+    group: root
+    mode: 0644
+
+- name: restart samba server
+  ansible.builtin.service:
+    name: smbd
+    state: restarted
