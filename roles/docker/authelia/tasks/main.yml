@@ -1,0 +1,23 @@
+---
+- name: make sure the required folders exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+  loop:
+    - "{{ BASE_DIR }}authelia"
+    - "{{ BASE_DIR }}authelia/data"
+
+- name: copy the authelia configuration to the host
+  template:
+    src: configuration.yml
+    dest: "{{ BASE_DIR }}authelia/data/configuration.yml"
+
+- name: copy the compose template to the host
+  template:
+    src: compose.yml
+    dest: "{{ BASE_DIR }}authelia/compose.yml"
+
+- name: start stack and wait
+  community.docker.docker_compose_v2:
+    project_src: "{{ BASE_DIR }}authelia"
+    wait: true

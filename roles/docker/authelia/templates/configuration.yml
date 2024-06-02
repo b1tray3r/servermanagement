@@ -1,0 +1,68 @@
+---
+theme: dark
+
+identity_validation:
+  reset_password:
+    jwt_secret: "{{ AUTHELIA_JWT_SECRET }}"
+
+server:
+  address: tcp://0.0.0.0:9091/
+
+log:
+  level: {{ AUTHELIA_LOG_LEVEL }}
+
+totp:
+  issuer: "{{ AUTHELIA_PROXY_HOST }}"
+
+authentication_backend:
+  file:
+    path: /config/users_database.yml
+
+access_control:
+  default_policy: deny
+  rules:
+    {% for rule in AUTHELIA_ACCESS_CONTROL_RULES: %}
+- domain: {{ rule.domain }}
+      policy: {{ rule.policy }}
+    {% endfor %}
+
+session:
+  name: authelia_session
+  secret: "{{ AUTHELIA_SESSION_SECRET }}"
+  same_site: lax
+  expiration: 1h
+  inactivity: 15m
+  remember_me: 1M
+  cookies:
+    - domain: "{{ AUTHELIA_SESSION_DOMAIN }}"
+      authelia_url: "https://{{ AUTHELIA_PROXY_HOST }}"
+
+regulation:
+  max_retries: 3
+  find_time: 120
+  ban_time: 600
+
+storage:
+  encryption_key: "{{ AUTHELIA_STORAGE_SECRET }}"
+  local:
+    path: /config/db.sqlite3
+
+notifier:
+  smtp:
+    username: {{ AUTHELIA_SMTP_USER }}
+    password: {{ AUTHELIA_SMTP_PASSWORD }}
+    address: {{ AUTHELIA_SMTP_ADDRESS }}
+    sender: sso@{{ AUTHELIA_PROXY_HOST }}
+    identifier: {{ AUTHELIA_PROXY_HOST }}
+    subject: "[Authelia] {title}"
+    startup_check_address: "{{ AUTHELIA_SMTP_USER }}"
+    disable_require_tls: true
+    disable_html_emails: false
+
+webauthn:
+  disable: false
+  display_name: Authelia
+  attestation_conveyance_preference: none
+  user_verification: preferred
+  timeout: 120s
+

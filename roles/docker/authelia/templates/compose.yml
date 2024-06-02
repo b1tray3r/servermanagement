@@ -1,0 +1,26 @@
+networks:
+  proxy:
+    external: true
+    name: proxy
+
+services:
+  authelia:
+    image: authelia/authelia:4.38.8
+    container_name: authelia
+    restart: unless-stopped
+    volumes:
+      - ./data/:/config
+    networks:
+      - proxy
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=proxy
+      - traefik.http.routers.authelia.entrypoints=websecure
+      - traefik.http.routers.authelia.tls=true
+      - traefik.http.routers.authelia.rule=Host(`{{ AUTHELIA_PROXY_HOST }}`)
+      - traefik.http.routers.authelia.tls.certresolver=letsencrypt
+      - traefik.http.routers.authelia.tls.options=default
+      - traefik.http.middlewares.authelia.forwardauth.address=http://authelia:9091/api/verify?rd=https://sso-test.a.borgardt.me
+      - traefik.http.middlewares.authelia.forwardauth.trustForwardHeader=true
+      - traefik.http.middlewares.authelia.forwardauth.authResponseHeaders=Remote-User,Remote-Groups,Remote-Name,Remote-Email
+
