@@ -1,9 +1,11 @@
 services:
   ntfy:
-    image: binwiederhier/ntfy:v2.11.0
+    image: binwiederhier/ntfy:{{ NTFY_IMAGE_VERSION }}
     container_name: ntfy
     command:
       - serve
+    env_file:
+      - ./data/.env
     healthcheck:
       test:
         - CMD-SHELL

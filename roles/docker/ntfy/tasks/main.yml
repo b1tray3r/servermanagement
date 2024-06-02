@@ -12,14 +12,16 @@
     path: "{{ BASE_DIR }}ntfy/data/user.db"
     state: touch
 
-- name: touch the config.yml file
+- name: write .env to host
   ansible.builtin.copy:
     content: |
-      auth-file: /var/lib/ntfy/user.db
-      auth-default-access: "deny-all"
-      behind-proxy: true
-      enable-login: false
-    dest: "{{ BASE_DIR }}ntfy/data/config.yml"
+      NTFY_ENABLE_LOGIN: true
+      NTFY_BEHIND_PROXY: true
+      NTFY_BASE_URL: https://{{ NTFY_PROXY_HOST }}
+    dest: "{{ BASE_DIR }}/ntfy/data/.env"
+    owner: root
+    group: root
+    mode: 0644
 
 - name: copy the compose template to the host
   template:
