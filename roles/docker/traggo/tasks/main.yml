@@ -1,0 +1,28 @@
+---
+- name: make sure the required folders exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+  loop:
+    - "{{ BASE_DIR }}traggo"
+    - "{{ BASE_DIR }}traggo/data"
+
+- name: write .env to host
+  ansible.builtin.copy:
+    content: |
+      TRAGGO_DEFAULT_USER_NAME: aborgardt
+      TRAGGO_DEFAULT_USER_PASS: MiBt&zBzTLQRntK8T!GS
+    dest: "{{ BASE_DIR }}/traggo/data/.env"
+    owner: root
+    group: root
+    mode: 0644
+
+- name: copy the compose template to the host
+  template:
+    src: compose.yml
+    dest: "{{ BASE_DIR }}traggo/compose.yml"
+
+- name: start stack and wait
+  community.docker.docker_compose_v2:
+    project_src: "{{ BASE_DIR }}traggo"
+    wait: true

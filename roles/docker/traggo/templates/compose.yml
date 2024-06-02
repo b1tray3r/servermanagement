@@ -1,0 +1,22 @@
+services:
+  traggo:
+    image: traggo/server:{{ TRAGGO_IMAGE_VERSION }}
+    container_name: traggo
+    env_file:
+      - ./data/.env
+    volumes:
+      - /var/opt/stacks/traggo/data:/opt/traggo/data
+    networks:
+      - proxy
+    labels:
+      - traefik.docker.network=proxy
+      - traefik.enable=true
+      - traefik.http.routers.traggo.entrypoints=websecure
+      - traefik.http.routers.traggo.rule=Host(`{{ TRAGGO_PROXY_HOST }}`)
+      - traefik.http.routers.traggo.tls.certResolver=letsencrypt
+      - traefik.http.routers.traggo.middlewares=authelia
+      - traefik.http.services.traggo.loadbalancer.server.port=3030
+networks:
+  proxy:
+    external: true
+    name: {{ TRAEFIK_PROXY_NETWORK }}
