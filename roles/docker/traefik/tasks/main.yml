@@ -23,7 +23,7 @@
   loop:
     - "{{ BASE_DIR }}traefik/data/acme.json"
 
-- name: write traefik_yml to host
+- name: write .env to host
   ansible.builtin.copy:
     content: |
       IONOS_API_KEY={{ TRAEFIK_IONOS_API_KEY }}

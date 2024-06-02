@@ -23,6 +23,7 @@ services:
       - --certificatesresolvers.letsencrypt.acme.storage=/acme.json
       - --certificatesresolvers.letsencrypt.acme.dnschallenge.provider=ionos
       - --certificatesresolvers.letsencrypt.acme.dnschallenge.delayBeforeCheck=0
+      - --providers.file.filename=/dynamic.yml
     ports:
       - 80:80
       - 443:443
