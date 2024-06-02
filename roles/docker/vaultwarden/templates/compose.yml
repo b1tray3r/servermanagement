@@ -1,0 +1,28 @@
+services:
+  server:
+    image: vaultwarden/server:{{ VAULTWARDEN_IMAGE_VERSION }}
+    container_name: bitwarden
+    hostname: bitwarden
+    volumes:
+      - ./data/:/data
+    restart: always
+    env_file:
+      - ./data/.env
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=proxy
+      - traefik.http.routers.bitwarden.tls.certResolver=letsencrypt
+      - traefik.http.routers.bitwarden.entrypoints=websecure
+      - traefik.http.routers.bitwarden.service=bitwarden
+      - traefik.http.routers.bitwarden.rule=Host(`{{ VAULTWARDEN_PROXY_HOST }}`)
+      - traefik.http.services.bitwarden.loadbalancer.server.port=80
+    logging:
+      options:
+        max-size: 10m
+    networks:
+      - proxy
+
+networks:
+    proxy:
+        external: true
+        name: {{ TRAEFIK_PROXY_NETWORK }}
