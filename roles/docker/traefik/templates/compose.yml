@@ -28,8 +28,7 @@ services:
       - 80:80
       - 443:443
     env_file:
-      - path: ./data/.env
-        required: true
+      - ./data/.env
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
       - /etc/localtime:/etc/localtime:ro
