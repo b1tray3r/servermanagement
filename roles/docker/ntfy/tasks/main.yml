@@ -9,8 +9,11 @@
 
 - name: touch the user.db file
   ansible.builtin.file:
-    path: "{{ BASE_DIR }}ntfy/data/user.db"
+    path: "{{ item }}"
     state: touch
+  with_items:
+    - "{{ BASE_DIR }}ntfy/data/user.db"
+    - "{{ BASE_DIR }}ntfy/data/config.yml"
 
 - name: write .env to host
   ansible.builtin.copy:
