@@ -5,7 +5,7 @@ services:
     env_file:
       - ./data/.env
     volumes:
-      - /var/opt/stacks/traggo/data:/opt/traggo/data
+      - "{{ BASE_DIR }}traggo/data:/opt/traggo/data"
     networks:
       - proxy
     labels:

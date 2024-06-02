@@ -12,6 +12,7 @@
     content: |
       TRAGGO_DEFAULT_USER_NAME: aborgardt
       TRAGGO_DEFAULT_USER_PASS: MiBt&zBzTLQRntK8T!GS
+      TRAGGO_DATABASE_CONNECTION=/opt/traggo/data/traggo.db
     dest: "{{ BASE_DIR }}/traggo/data/.env"
     owner: root
     group: root
