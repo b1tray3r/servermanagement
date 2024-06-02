@@ -1,0 +1,68 @@
+services:
+  nextcloud-app:
+    image: nextcloud:{{ NEXTCLOUD_IMAGE_VERSION }}
+    restart: unless-stopped
+    depends_on:
+      - nextcloud-redis
+      - nextcloud-db
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./data/nextcloud:/var/www/html
+      - ./data/apps:/var/www/html/custom_apps
+      - ./data/config:/var/www/html/config
+      - ./data/appdata:/var/www/html/data
+    networks:
+      - proxy
+      - nextcloud
+    env_file:
+      - ./data/.env
+    labels:
+      - traefik.enable=true
+      - traefik.docker.network=proxy
+      - traefik.http.routers.nextcloud.rule=Host(`{{ NEXTCLOUD_PROXY_HOST }}`)
+      - traefik.http.routers.nextcloud.entrypoints=websecure
+      - traefik.http.routers.nextcloud.tls.certresolver=letsencrypt
+      - traefik.http.services.nextcloud.loadbalancer.server.port=80
+      - traefik.http.routers.nextcloud.middlewares=nextcloud-redirectregex1,nextcloud-redirectregex2,secHeaders@file
+      - traefik.http.middlewares.nextcloud-redirectregex1.redirectregex.permanent=true
+      - traefik.http.middlewares.nextcloud-redirectregex1.redirectregex.regex=https?://([^/]*)/.well-known/(card|cal)dav
+      - traefik.http.middlewares.nextcloud-redirectregex1.redirectregex.replacement=https://$${1}/remote.php/dav/
+      - traefik.http.middlewares.nextcloud-redirectregex2.redirectregex.permanent=true
+      - traefik.http.middlewares.nextcloud-redirectregex2.redirectregex.regex=https?://([^/]*)(/.well-known[^#]*)
+      - traefik.http.middlewares.nextcloud-redirectregex2.redirectregex.replacement=https://$${1}/index.php$${2}
+  nextcloud-redis:
+    working_dir: /data
+    restart: unless-stopped
+    logging:
+      options:
+        max-size: 10m
+    runtime: runc
+    image: redis:{{ NEXTCLOUD_REDIS_VERSION }}
+    command: redis-server --requirepass {{ NEXTCLOUD_REDIS_PASSWORD }}
+    env_file:
+      - ./data/.env
+    networks:
+      - nextcloud
+  nextcloud-db:
+    env_file:
+      - ./data/.env
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - /etc/timezone:/etc/timezone:ro
+      - ./data/database/:/var/lib/mysql:rw
+      - ./data/backups:/backups:rw
+    restart: unless-stopped
+    logging:
+      options:
+        max-size: 10m
+    image: mariadb:{{ NEXTCLOUD_MARIADB_VERSION }}
+    command: mariadbd
+    networks:
+      - nextcloud
+networks:
+  nextcloud:
+    external: false
+    name: nextcloud
+  proxy:
+    external: true
+    name: {{ TRAEFIK_PROXY_NETWORK }}

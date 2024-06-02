@@ -1,0 +1,40 @@
+---
+- name: make sure the required folders exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+  loop:
+    - "{{ BASE_DIR }}nextcloud"
+    - "{{ BASE_DIR }}nextcloud/data"
+
+- name: write .env to host
+  ansible.builtin.copy:
+    content: |
+      MYSQL_ROOT_PASSWORD={{ NEXTCLOUD_MYSQL_ROOT_PASSWORD }}
+      MYSQL_PASSWORD={{ NEXTCLOUD_MYSQL_PASSWORD }}
+      MYSQL_DATABASE=nextcloud
+      MYSQL_USER=nextcloud
+      MYSQL_INITDB_SKIP_TZINFO=1
+      REDIS_PASSWORD={{ NEXTCLOUD_REDIS_PASSWORD }}
+      PUID=1000
+      PGID=1000
+      TZ={{ NEXTCLOUD_TZ }}
+      TRUSTED_PROXIES={{ NEXTCLOUD_TRUSTED_PROXIES }}
+      OVERWRITECLIURL={{ NEXTCLOUD_OVERWRITECLIURL }} 
+      OVERWRITEPROTOCOL=https
+      NEXTCLOUD_TRUSTED_DOMAINS={{ NEXTCLOUD_TRUSTED_DOMAINS }}
+      OVERWRITEHOST={{ NEXTCLOUD_OVERWRITEHOST }}
+    dest: "{{ BASE_DIR }}/nextcloud/data/.env"
+    owner: root
+    group: root
+    mode: 0644
+
+- name: copy the compose template to the host
+  template:
+    src: compose.yml
+    dest: "{{ BASE_DIR }}nextcloud/compose.yml"
+
+- name: start stack and wait
+  community.docker.docker_compose_v2:
+    project_src: "{{ BASE_DIR }}nextcloud"
+    wait: true
