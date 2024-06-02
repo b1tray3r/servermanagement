@@ -40,11 +40,6 @@
     group: root
     mode: 0644
 
-- name: copy the authelia configuration to the host
-  template:
-    src: configuration.yml
-    dest: "{{ BASE_DIR }}traefik/data/configuration.yml"
-
 - name: copy the compose template to the host
   template:
     src: compose.yml
