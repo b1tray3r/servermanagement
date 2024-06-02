@@ -4,6 +4,7 @@ networks:
         name: {{ TRAEFIK_PROXY_NETWORK }}
 services:
     dockge:
+        container_name: dockge
         environment:
         - DOCKGE_STACKS_DIR=/var/opt/stacks
         image: louislam/dockge:{{ DOCKGE_IMAGE_VERSION }}
