@@ -1,0 +1,5 @@
+---
+- hosts: homelab, webserver 
+  become: yes
+  roles:
+    - docker/blog

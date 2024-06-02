@@ -1,0 +1,19 @@
+services:
+  nginx:
+    image: nginx:latest
+    container_name: alex-blog
+    restart: always
+    volumes:
+      - ./data/github/workspace/site:/usr/share/nginx/html
+    labels:
+      - traefik.docker.network=traefik
+      - traefik.enable=true
+      - traefik.http.routers.alex-blog-secure.entrypoints=websecure
+      - traefik.http.routers.alex-blog-secure.rule=Host(`{{ BLOG_PROXY_HOST }}`)
+      - traefik.http.routers.alex-blog-secure.tls.certResolver=letsencrypt
+    networks:
+      - proxy
+networks:
+  proxy:
+    external: true
+    name: {{ TRAEFIK_PROXY_NETWORK }}
