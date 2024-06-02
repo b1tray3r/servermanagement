@@ -1,6 +1,7 @@
 services:
   nextcloud-app:
     image: nextcloud:{{ NEXTCLOUD_IMAGE_VERSION }}
+    container_name: nextcloud-app
     restart: unless-stopped
     depends_on:
       - nextcloud-redis
@@ -32,6 +33,7 @@ services:
       - traefik.http.middlewares.nextcloud-redirectregex2.redirectregex.replacement=https://$${1}/index.php$${2}
   nextcloud-redis:
     working_dir: /data
+    container_name: nextcloud-redis
     restart: unless-stopped
     logging:
       options:
@@ -44,6 +46,7 @@ services:
     networks:
       - nextcloud
   nextcloud-db:
+    container_name: nextcloud-db
     env_file:
       - ./data/.env
     volumes:
