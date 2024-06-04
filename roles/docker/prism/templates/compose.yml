@@ -1,0 +1,44 @@
+services:
+  prism-db:
+    image: mariadb:10.11
+    container_name: prism-db
+    command: mariadbd --innodb-buffer-pool-size=512M
+      --transaction-isolation=READ-COMMITTED --character-set-server=utf8mb4
+      --collation-server=utf8mb4_unicode_ci --max-connections=512
+      --innodb-rollback-on-timeout=OFF --innodb-lock-wait-timeout=120
+    restart: always
+    volumes:
+      - /etc/localtime:/etc/localtime:ro
+      - ./data/db:/var/lib/mysql
+    env_file:
+      - ./data/.env
+    networks:
+      - prism
+  prism-app:
+    image: photoprism/photoprism:240528-ce
+    container_name: prism-app
+    restart: unless-stopped
+    env_file:
+      - ./data/.env
+    volumes:
+{% for volume in PRISM_VOLUMES %}
+    - "{{ volume }}"
+{% endfor %}
+    networks:
+      - prism
+      - proxy
+    labels:
+      - traefik.docker.network=proxy
+      - traefik.enable=true
+      - traefik.http.routers.prism.entrypoints=websecure
+      - traefik.http.routers.prism.rule=Host(`{{ PRISM_PROXY_HOST }}`)
+      - traefik.http.routers.prism.tls=true
+      - traefik.http.routers.prism.tls.certresolver=letsencrypt
+      - traefik.http.routers.prism.tls.options=default
+      - traefik.http.services.prirm.loadbalancer.server.port=2342
+networks:
+  prism:
+    external: false
+  proxy:
+    external: true
+    name: "{{ TRAEFIK_PROXY_NETWORK }}"

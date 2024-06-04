@@ -34,8 +34,10 @@ session:
   inactivity: 15m
   remember_me: 1M
   cookies:
-    - domain: "{{ AUTHELIA_SESSION_DOMAIN }}"
-      authelia_url: "https://{{ AUTHELIA_PROXY_HOST }}"
+{% for cookie in AUTHELIA_SESSION_COOKIES %}
+    - domain: {{ cookie.name }}
+      authelia_url: {{ cookie.authelia_url }}
+{% endfor %}
 
 regulation:
   max_retries: 3

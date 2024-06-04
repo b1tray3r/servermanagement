@@ -1,0 +1,46 @@
+---
+- name: make sure the required folders exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+  loop:
+    - "{{ BASE_DIR }}prism"
+    - "{{ BASE_DIR }}prism/data"
+
+- name: write .env to host
+  ansible.builtin.copy:
+    content: |
+      PRISM_PROXY_HOST=images.a.borgardt.me
+
+      PHOTOPRISM_SITE_URL=https://{{ PRISM_PROXY_HOST }}
+      PHOTOPRISM_AUTH_MODE=public
+      PHOTOPRISM_UPLOAD_NSFW=true
+      PHOTOPRISM_DATABASE_DRIVER=mysql
+      PHOTOPRISM_DATABASE_SERVER=prism-db:3306
+      PHOTOPRISM_DATABASE_NAME=photoprism
+      PHOTOPRISM_DATABASE_USER=photoprism
+      PHOTOPRISM_DATABASE_PASSWORD={{ PRISM_DATABASE_PASSWORD }}
+      PHOTOPRISM_EXPERIMENTAL=true
+      PHOTOPRISM_DEFAULT_LOCALE=de
+      PHOTOPRISM_FACE_SIZE=20
+
+      MARIADB_AUTO_UPGRADE=1
+      MARIADB_INITDB_SKIP_TZINFO=1
+      MARIADB_DATABASE=photoprism
+      MARIADB_USER=photoprism
+      MARIADB_PASSWORD={{ PRISM_DATABASE_PASSWORD }}
+      MARIADB_RANDOM_ROOT_PASSWORD=yes
+    dest: "{{ BASE_DIR }}/prism/data/.env"
+    owner: root
+    group: root
+    mode: 0644
+
+- name: copy the compose template to the host
+  template:
+    src: compose.yml
+    dest: "{{ BASE_DIR }}prism/compose.yml"
+
+- name: start stack and wait
+  community.docker.docker_compose_v2:
+    project_src: "{{ BASE_DIR }}prism"
+    wait: true
