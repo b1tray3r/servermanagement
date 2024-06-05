@@ -36,6 +36,7 @@ services:
       - traefik.http.routers.prism.tls.certresolver=letsencrypt
       - traefik.http.routers.prism.tls.options=default
       - traefik.http.services.prirm.loadbalancer.server.port=2342
+      - traefik.http.routers.prism.middlewares=authelia
 networks:
   prism:
     external: false
