@@ -66,3 +66,29 @@ webauthn:
   user_verification: preferred
   timeout: 120s
 
+identity_providers:
+  oidc:
+    hmac_secret: ''
+    jwks:
+      - use: 'sig'
+        key: {{ secret "/media/appdata/stacks/authelia/data/private.pem" | mindent 10 "|" | msquote }}
+    clients:
+{% for c in AUTHELIA_OIDC_CLIENTS: %}
+      - client_id: {{ c.id }}
+        client_name: {{ c.name }}
+        client_secret: {{ c.secret }}
+        public: false
+        authorization_policy: 'two_factor'
+        require_pkce: true
+        pkce_challenge_method: 'S256'
+        redirect_uris:
+          - {{ c.redirect_uris }}
+        scopes:
+          - 'openid'
+          - 'profile'
+          - 'email'
+          - 'groups'
+        userinfo_signed_response_alg: 'none'
+        token_endoint_auth_method: 'client_secret_basic'
+{% endfor %}
+
