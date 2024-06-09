@@ -1,0 +1,21 @@
+networks:
+  proxy:
+    external: true
+    name: "{{ TRAEFIK_PROXY_NETWORK }}"
+
+services:
+  trilium:
+    image: zadam/trilium
+    restart: always
+    environment:
+      - TRILIUM_DATA_DIR=/home/node/trilium-data
+    volumes:
+      - ./data/:/home/node/trilium-data
+    labels:
+      - traefik.docker.network=traefik
+      - traefik.enable=true
+      - traefik.http.routers.trilium.entrypoints=websecure
+      - traefik.http.routers.trilium.rule=Host(`{{ TRILIUM_PROXY_HOST }}`)
+      - traefik.http.routers.trilium.tls.certResolver=letsencrypt
+    networks:
+      - proxy

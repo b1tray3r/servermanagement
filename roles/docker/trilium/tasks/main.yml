@@ -1,0 +1,18 @@
+---
+- name: make sure the required folders exist
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+  loop:
+    - "{{ BASE_DIR }}trilium"
+    - "{{ BASE_DIR }}trilium/data"
+
+- name: copy the compose template to the host
+  template:
+    src: compose.yml
+    dest: "{{ BASE_DIR }}trilium/compose.yml"
+
+- name: start stack and wait
+  community.docker.docker_compose_v2:
+    project_src: "{{ BASE_DIR }}trilium"
+    wait: true
